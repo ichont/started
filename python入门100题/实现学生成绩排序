@@ -1,0 +1,17 @@
+
+
+student = [
+    {'id':100, 'name':'x', 'score':89},
+    {'id':101, 'name':'y', 'score':87},
+    {'id':102, 'name':'z', 'score':90},
+]
+
+
+print (sorted(student, key = lambda x:x['score']))
+
+
+def get_scores(info):
+    return info['score']
+
+sorted_student = sorted(student, key=get_scores)
+print(sorted_student)

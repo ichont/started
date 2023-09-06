@@ -1,0 +1,11 @@
+
+
+li = [3, 5, 7, 11,13]
+move = [7,13]
+
+
+for i in move:
+    li.remove(i)
+
+
+print (li)
