@@ -1,0 +1,329 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              05/07/2023 18:39:05 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\output\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE src\main.c OPTIMIZE(8,SPEED) BROWSE PRINT(.\output\main.lst) TABS(2) OBJ
+                    -ECT(.\output\main.obj)
+
+line level    source
+
+   1          /*
+   2              Paper Counter
+   3              Copyright (C) 2022  ???
+   4          
+   5              This program is free software: you can redistribute it and/or modify
+   6              it under the terms of the GNU General Public License as published by
+   7              the Free Software Foundation, either version 3 of the License, or
+   8              (at your option) any later version.
+   9          
+  10              This program is distributed in the hope that it will be useful,
+  11              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  12              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  13              GNU General Public License for more details.
+  14          
+  15              You should have received a copy of the GNU General Public License
+  16              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  17          */
+  18          
+  19          #include "reg52.h"
+  20          #include "i2c.h"
+  21          
+  22          typedef unsigned char u8;
+  23          typedef unsigned int u16;
+  24          
+  25          #define GPIO_DIG P0
+  26          #define AllNUM   80
+  27          
+  28          sbit LSA=P2^2;
+  29          sbit LSB=P2^3;
+  30          sbit LSC=P2^4;
+  31          
+  32          sbit KeyAddNum=P3^2;  //????
+  33          sbit KeySure=P3^3;  //????K4
+  34          sbit bee=P2^5;
+  35          
+  36          
+  37          u8 code smgduan[11]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x40};//??
+  38          
+  39          
+  40          u8 DisplayData[8];
+  41          
+  42          unsigned char TimeCount;//?????
+  43          u16  Freq = 0; //????
+  44          u16  Freq_array[6]={0};//???????
+  45          
+  46          u16  NumOfTest = 0;//?????
+  47          char Num = 0;//??????
+  48          
+  49          
+  50          //????
+  51          void delay(u16 i)
+  52          {
+  53   1          while(i--);
+  54   1      }
+C51 COMPILER V9.60.0.0   MAIN                                                              05/07/2023 18:39:05 PAGE 2   
+
+  55          
+  56          //??????
+  57          unsigned char CalPaperNum(u16 frequence)
+  58          {
+  59   1          char i;
+  60   1          int freq1,num11,num12;
+  61   1          int freq2,num21,num22;
+  62   1          int freq3,num31,num32;
+  63   1          unsigned char PaperNum;
+  64   1      
+  65   1          for(i=2; i<AllNUM-3 ;i+=2)
+  66   1          {
+  67   2              num11 = At24c02Read(i-2);
+  68   2              delay(1000);
+  69   2              num12 = At24c02Read(i-1);
+  70   2              delay(1000);
+  71   2              freq1 = num11*255 + num12;
+  72   2              
+  73   2              num21 = At24c02Read(i);
+  74   2              delay(1000);
+  75   2              num22 = At24c02Read(i+1);
+  76   2              delay(1000);
+  77   2              freq2 = num21*255 + num22;
+  78   2              
+  79   2              num31 = At24c02Read(i+2);
+  80   2              delay(1000);
+  81   2              num32 = At24c02Read(i+3);
+  82   2              delay(1000);
+  83   2              freq3 = num31*255 + num32;
+  84   2              //??????????????????????
+  85   2              if(
+  86   2                  (freq2 -(0.4) * (freq2 - freq1) <= frequence) 
+  87   2                  && (frequence < freq2 + (0.6)*(freq3 - freq2))
+  88   2                ) 
+  89   2              {
+  90   3                   PaperNum = i/2;
+  91   3                  return PaperNum;  
+  92   3              }
+  93   2               
+  94   2          }
+  95   1          return 0;
+  96   1      }
+  97          
+  98          //????0&1???
+  99          void Int01_Config()
+ 100          {
+ 101   1          //??INT0
+ 102   1          IT0=1;//???????(???)
+ 103   1          EX0=1;//??INT0??????
+ 104   1          //??INT1
+ 105   1          IT1=1;//???????(???)
+ 106   1          EX1=1;//??INT1??????
+ 107   1          PX1=1;  
+ 108   1      }
+ 109          
+ 110          //?????????
+ 111          void Timer_Config() //????????
+ 112          {
+ 113   1          TMOD=0x51;//???1??????,??01.???0??????,??01    ??TR0????
+ 114   1      
+ 115   1          TH0=0x3c;//???????,??50ms
+ 116   1          TL0=0xb0;
+C51 COMPILER V9.60.0.0   MAIN                                                              05/07/2023 18:39:05 PAGE 3   
+
+ 117   1      
+ 118   1          ET0=1;//?????0????
+ 119   1          ET1=1;//?????1????,??
+ 120   1          EA=1;//?????
+ 121   1      }
+ 122          
+ 123          //?????
+ 124          void Timer_OnOff(int ONOFF)
+ 125          {
+ 126   1          if(ONOFF == 1)
+ 127   1          {
+ 128   2               TR0=1;//?????0,??
+ 129   2              TR1=1;//?????1,??
+ 130   2          }else
+ 131   1          {
+ 132   2               TR0=0;//?????0,??
+ 133   2              TR1=0;//?????1,??
+ 134   2          } 
+ 135   1      }
+ 136          
+ 137          void DigDisplay()
+ 138          {
+ 139   1          u8 i;
+ 140   1          for(i=0;i<8;i++)
+ 141   1          {
+ 142   2              switch(i)  //??,????????,
+ 143   2              {
+ 144   3                  case(0):
+ 145   3                      LSA=0;LSB=0;LSC=0; break;//???0?
+ 146   3                  case(1):
+ 147   3                      LSA=1;LSB=0;LSC=0; break;//???1?
+ 148   3                  case(2):
+ 149   3                      LSA=0;LSB=1;LSC=0; break;//???2?
+ 150   3                  case(3):
+ 151   3                      LSA=1;LSB=1;LSC=0; break;//???3?
+ 152   3                  case(4):
+ 153   3                      LSA=0;LSB=0;LSC=1; break;//???4?
+ 154   3                  case(5):
+ 155   3                      LSA=1;LSB=0;LSC=1; break;//???5?
+ 156   3                  case(6):
+ 157   3                      LSA=0;LSB=1;LSC=1; break;//???6?  
+ 158   3                  case(7):
+ 159   3                      LSA=1;LSB=1;LSC=1; break;//???7?  
+ 160   3              }
+ 161   2              GPIO_DIG=DisplayData[i];
+ 162   2              delay(100);
+ 163   2              GPIO_DIG=0x00;
+ 164   2          }
+ 165   1      }
+ 166          
+ 167          void main()
+ 168          {
+ 169   1      
+ 170   1          Int01_Config();
+ 171   1          Timer_Config();//???0/1???
+ 172   1          Timer_OnOff(1);
+ 173   1          At24c02Write(NumOfTest,0);
+ 174   1          NumOfTest++;
+ 175   1          delay(2000);
+ 176   1          At24c02Write(NumOfTest,0);
+ 177   1          NumOfTest++;
+ 178   1          delay(2000);
+C51 COMPILER V9.60.0.0   MAIN                                                              05/07/2023 18:39:05 PAGE 4   
+
+ 179   1      
+ 180   1          while(1)
+ 181   1          {
+ 182   2              if(TR1 == 0) //????200ms,?????
+ 183   2              {
+ 184   3                  Freq = Freq + TL1;
+ 185   3                  Freq = Freq + (TH1*256);
+ 186   3                  Freq_array[0] = Freq_array[1];
+ 187   3                  Freq_array[1] = Freq_array[2];
+ 188   3                  Freq_array[2] = Freq_array[3];
+ 189   3                  Freq_array[3] = Freq_array[4];
+ 190   3                  Freq_array[4] = Freq ;
+ 191   3      
+ 192   3                  Freq_array[5] = Freq_array[0]*0.1 + 
+ 193   3                                  Freq_array[1]*0.1 + 
+ 194   3                                  Freq_array[2]*0.2 + 
+ 195   3                                  Freq_array[3]*0.3 + 
+ 196   3                                  Freq_array[4]*0.3;
+ 197   3      
+ 198   3                  if(Freq_array[5]==0)
+ 199   3                  {
+ 200   4                      bee = 0;
+ 201   4                      delay(2000);
+ 202   4                      bee = 1;
+ 203   4                      delay(10);
+ 204   4      
+ 205   4                      DisplayData[7]=smgduan[10];
+ 206   4                      DisplayData[6]=smgduan[10];
+ 207   4      
+ 208   4                      DisplayData[4]=smgduan[10];
+ 209   4                      DisplayData[3]=smgduan[10];
+ 210   4                      DisplayData[2]=smgduan[10];       
+ 211   4                      DisplayData[1]=smgduan[10];
+ 212   4                      DisplayData[0]=smgduan[10];//???
+ 213   4                  }else{
+ 214   4                      DisplayData[4]=smgduan[Freq_array[5] %100000/10000];
+ 215   4                      DisplayData[3]=smgduan[Freq_array[5] %10000/1000];
+ 216   4                      DisplayData[2]=smgduan[Freq_array[5] %1000/100];        
+ 217   4                      DisplayData[1]=smgduan[Freq_array[5] %100/10];
+ 218   4                      DisplayData[0]=smgduan[Freq_array[5] %10];//???
+ 219   4                  }
+ 220   3                  //??
+ 221   3                  Freq=0;
+ 222   3                  TH1=0;
+ 223   3                  TL1=0;
+ 224   3                  Timer_OnOff(1);
+ 225   3              }
+ 226   2      
+ 227   2              DigDisplay();
+ 228   2          } 
+ 229   1          
+ 230   1              
+ 231   1      }
+ 232          
+ 233          //????0?????
+ 234          void Int0() interrupt 0   
+ 235          {
+ 236   1          delay(1000);   //????
+ 237   1          if(KeyAddNum==0)
+ 238   1          {
+ 239   2              Num = CalPaperNum(Freq_array[5]);
+ 240   2      
+C51 COMPILER V9.60.0.0   MAIN                                                              05/07/2023 18:39:05 PAGE 5   
+
+ 241   2              DisplayData[7]=smgduan[Num/10];
+ 242   2              DisplayData[6]=smgduan[Num%10];
+ 243   2                  
+ 244   2              Timer_OnOff(0);
+ 245   2              bee = 0;
+ 246   2              delay(500);
+ 247   2              bee = 1;
+ 248   2              delay(10);
+ 249   2              Timer_OnOff(1);
+ 250   2          }
+ 251   1          
+ 252   1      }
+ 253          
+ 254          //????1?????
+ 255          void Int1() interrupt 2   
+ 256          {
+ 257   1          delay(3000);   //????
+ 258   1          if(KeySure==0)
+ 259   1          {
+ 260   2              At24c02Write(NumOfTest,Freq_array[5]/255);
+ 261   2              NumOfTest++;
+ 262   2              delay(2000);
+ 263   2              At24c02Write(NumOfTest,Freq_array[5]%255);
+ 264   2              NumOfTest++;
+ 265   2              delay(2000);
+ 266   2              bee = 0;
+ 267   2              delay(5000);
+ 268   2              bee = 1;
+ 269   2              delay(10);
+ 270   2              DisplayData[7]=smgduan[(NumOfTest/2-1)/10];
+ 271   2              DisplayData[6]=smgduan[(NumOfTest/2-1)%10]; 
+ 272   2          }
+ 273   1          delay(1000);
+ 274   1      }
+ 275          
+ 276          //????1 ?????????0?????
+ 277          void Timer0() interrupt 1
+ 278          {
+ 279   1          //?????????,??50ms
+ 280   1          TH0 = 0x3c;
+ 281   1          TL0 = 0xb0;
+ 282   1      
+ 283   1          TimeCount++;  
+ 284   1          if(TimeCount == 4)//200ms
+ 285   1          {
+ 286   2              TimeCount = 0;//??
+ 287   2              Timer_OnOff(0);
+ 288   2          }
+ 289   1      }
+ 290          
+ 291          //????3 ?????????1?????
+ 292          void Timer1() interrupt 3
+ 293          {
+ 294   1          
+ 295   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1505    ----
+   CONSTANT SIZE    =     11    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.0.0   MAIN                                                              05/07/2023 18:39:05 PAGE 6   
+
+   DATA SIZE        =     26      15
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

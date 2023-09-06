@@ -1,0 +1,212 @@
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    05/07/2023  18:39:05  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\output\i2c.obj, .\output\main.obj TO .\output\PaperCounter PRINT (.\output\PaperCounter.m5
+>> 1) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL WITH FLOATING POINT ARITHMETIC
+
+
+INPUT MODULES INCLUDED:
+  .\output\i2c.obj (I2C)
+  .\output\main.obj (MAIN)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPADD)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPMUL)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPCMP)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FCAST)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?CASTF)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPGETOPN)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?SCDIV)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?IMUL)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?UIDIV)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?SLDIV)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?LNEG)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?ULDIV)
+
+
+LINK MAP OF MODULE:  .\output\PaperCounter (I2C)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     001AH     UNIT         ?DT?MAIN
+            DATA    0022H     000FH     UNIT         _DATA_GROUP_
+            IDATA   0031H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0003H     ABSOLUTE     
+            CODE    0006H     0001H     UNIT         ?PR?TIMER1?MAIN
+                    0007H     0004H                  *** GAP ***
+            CODE    000BH     0003H     ABSOLUTE     
+                    000EH     0005H                  *** GAP ***
+            CODE    0013H     0003H     ABSOLUTE     
+                    0016H     0005H                  *** GAP ***
+            CODE    001BH     0003H     ABSOLUTE     
+            CODE    001EH     049BH     UNIT         ?C?LIB_CODE
+            CODE    04B9H     0227H     UNIT         ?PR?MAIN?MAIN
+            CODE    06E0H     0163H     UNIT         ?PR?_CALPAPERNUM?MAIN
+            CODE    0843H     00DEH     UNIT         ?PR?INT1?MAIN
+            CODE    0921H     009DH     UNIT         ?PR?INT0?MAIN
+            CODE    09BEH     008CH     UNIT         ?C_C51STARTUP
+            CODE    0A4AH     0074H     UNIT         ?PR?DIGDISPLAY?MAIN
+            CODE    0ABEH     004EH     UNIT         ?PR?_I2CSENDBYTE?I2C
+            CODE    0B0CH     0044H     UNIT         ?C?LDIV
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  05/07/2023  18:39:05  PAGE 2
+
+
+            CODE    0B50H     002FH     UNIT         ?PR?I2CREADBYTE?I2C
+            CODE    0B7FH     0029H     UNIT         ?PR?TIMER0?MAIN
+            CODE    0BA8H     0024H     UNIT         ?PR?DELAY10US?I2C
+            CODE    0BCCH     0022H     UNIT         ?PR?_AT24C02READ?I2C
+            CODE    0BEEH     001AH     UNIT         ?C_INITSEG
+            CODE    0C08H     0019H     UNIT         ?PR?_AT24C02WRITE?I2C
+            CODE    0C21H     0013H     UNIT         ?PR?_DELAY?MAIN
+            CODE    0C34H     0010H     UNIT         ?PR?TIMER_CONFIG?MAIN
+            CODE    0C44H     0010H     UNIT         ?PR?_TIMER_ONOFF?MAIN
+            CODE    0C54H     000FH     UNIT         ?PR?I2CSTART?I2C
+            CODE    0C63H     000BH     UNIT         ?PR?INT01_CONFIG?MAIN
+            CODE    0C6EH     000BH     UNIT         ?CO?MAIN
+            CODE    0C79H     000AH     UNIT         ?PR?I2CSTOP?I2C
+
+
+
+OVERLAY MAP OF MODULE:   .\output\PaperCounter (I2C)
+
+
+SEGMENT                          DATA_GROUP 
+  +--> CALLED SEGMENT          START    LENGTH
+----------------------------------------------
+?PR?INT0?MAIN                  -----    -----
+  +--> ?PR?_DELAY?MAIN
+  +--> ?PR?_CALPAPERNUM?MAIN
+  +--> ?CO?MAIN
+  +--> ?PR?_TIMER_ONOFF?MAIN
+
+?PR?_CALPAPERNUM?MAIN          0022H    000FH
+  +--> ?PR?_AT24C02READ?I2C
+  +--> ?PR?_DELAY?MAIN
+
+?PR?_AT24C02READ?I2C           -----    -----
+  +--> ?PR?I2CSTART?I2C
+  +--> ?PR?_I2CSENDBYTE?I2C
+  +--> ?PR?I2CREADBYTE?I2C
+  +--> ?PR?I2CSTOP?I2C
+
+?PR?I2CSTART?I2C               -----    -----
+  +--> ?PR?DELAY10US?I2C
+
+?PR?_I2CSENDBYTE?I2C           -----    -----
+  +--> ?PR?DELAY10US?I2C
+
+?PR?I2CREADBYTE?I2C            -----    -----
+  +--> ?PR?DELAY10US?I2C
+
+?PR?I2CSTOP?I2C                -----    -----
+  +--> ?PR?DELAY10US?I2C
+
+*** NEW ROOT ***************************************************
+
+?PR?INT1?MAIN                  -----    -----
+  +--> ?PR?_DELAY?MAIN
+  +--> ?PR?_AT24C02WRITE?I2C
+  +--> ?CO?MAIN
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  05/07/2023  18:39:05  PAGE 3
+
+
+?PR?_AT24C02WRITE?I2C          -----    -----
+  +--> ?PR?I2CSTART?I2C
+  +--> ?PR?_I2CSENDBYTE?I2C
+  +--> ?PR?I2CSTOP?I2C
+
+*** NEW ROOT ***************************************************
+
+?PR?TIMER0?MAIN                -----    -----
+  +--> ?PR?_TIMER_ONOFF?MAIN
+
+*** NEW ROOT ***************************************************
+
+?C_C51STARTUP                  -----    -----
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN                  -----    -----
+  +--> ?PR?INT01_CONFIG?MAIN
+  +--> ?PR?TIMER_CONFIG?MAIN
+  +--> ?PR?_TIMER_ONOFF?MAIN
+  +--> ?PR?_AT24C02WRITE?I2C
+  +--> ?PR?_DELAY?MAIN
+  +--> ?CO?MAIN
+  +--> ?PR?DIGDISPLAY?MAIN
+
+?PR?DIGDISPLAY?MAIN            -----    -----
+  +--> ?PR?_DELAY?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  .\output\PaperCounter (I2C)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        ?C?FPADD
+  C:0025H         PUBLIC        ?C?FPADD
+  C:0021H         PUBLIC        ?C?FPSUB
+  -------         ENDMOD        ?C?FPADD
+
+  -------         MODULE        ?C?FPMUL
+  C:0116H         PUBLIC        ?C?FPMUL
+  -------         ENDMOD        ?C?FPMUL
+
+  -------         MODULE        ?C?FPCMP
+  C:021EH         PUBLIC        ?C?FPCMP
+  C:021CH         PUBLIC        ?C?FPCMP3
+  -------         ENDMOD        ?C?FPCMP
+
+  -------         MODULE        ?C?FCAST
+  C:029FH         PUBLIC        ?C?FCASTC
+  C:029AH         PUBLIC        ?C?FCASTI
+  C:0295H         PUBLIC        ?C?FCASTL
+  -------         ENDMOD        ?C?FCAST
+
+  -------         MODULE        ?C?CASTF
+  C:02D3H         PUBLIC        ?C?CASTF
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  05/07/2023  18:39:05  PAGE 4
+
+
+  -------         ENDMOD        ?C?CASTF
+
+  -------         MODULE        ?C?SCDIV
+  C:0354H         PUBLIC        ?C?SCDIV
+  -------         ENDMOD        ?C?SCDIV
+
+  -------         MODULE        ?C?IMUL
+  C:0376H         PUBLIC        ?C?IMUL
+  -------         ENDMOD        ?C?IMUL
+
+  -------         MODULE        ?C?UIDIV
+  C:0388H         PUBLIC        ?C?UIDIV
+  -------         ENDMOD        ?C?UIDIV
+
+  -------         MODULE        ?C?SLDIV
+  C:0B0CH         PUBLIC        ?C?SLDIV
+  -------         ENDMOD        ?C?SLDIV
+
+  -------         MODULE        ?C?LNEG
+  C:03DDH         PUBLIC        ?C?LNEG
+  -------         ENDMOD        ?C?LNEG
+
+  -------         MODULE        ?C?ULDIV
+  C:0427H         PUBLIC        ?C?ULDIV
+  -------         ENDMOD        ?C?ULDIV
+
+Program Size: data=50.0 xdata=0 code=3189
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

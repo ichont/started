@@ -1,0 +1,4 @@
+".\output\i2c.obj",
+".\output\main.obj" 
+TO ".\output\PaperCounter" 
+PRINT(".\output\PaperCounter.m51") RAMSIZE(256) 
