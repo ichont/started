@@ -1,0 +1,78 @@
+import sensor, lcd, time
+import sensor, time
+from machine import UART,Timer
+from fpioa_manager import fm
+from Maix import GPIO
+from fpioa_manager import fm
+fm.register(12, fm.fpioa.GPIO0)
+LED_B = GPIO(GPIO.GPIO0, GPIO.OUT) #构建LED对象
+LED_B.value(0) #点亮LED
+#摄像头初始化
+sensor.reset()
+sensor.set_pixformat(sensor.RGB565)
+sensor.set_framesize(sensor.QVGA)
+sensor.set_vflip(1) #后置模式，所见即所得
+sensor.run(1)
+sensor.skip_frames(30)
+from machine import UART,Timer
+from fpioa_manager import fm
+
+#映射串口引脚
+fm.register(7 , fm.fpioa.UART1_RX, force=True)
+fm.register(30, fm.fpioa.UART1_TX, force=True)
+
+#初始化串口
+uart = UART(UART.UART1, 115200, read_buf_len=4096)
+#lcd初始化
+lcd.init()
+
+clock=time.clock()
+
+
+color_threshold = (23, 100, 31, 51, 6, 43)
+size_threshold = 2000
+max_Size = 10
+def find_max(blobs):
+    max_size=0
+    for blob in blobs:
+        if blob[2]*blob[3] > max_size:
+            max_blob=blob
+            max_size = blob[2]*blob[3]
+    return max_blob
+
+LED_B.value(0) #点亮LED
+while(1):
+    clock.tick()
+    img = sensor.snapshot()
+    blobs = img.find_blobs([color_threshold],area_threshold=50,pixels_threshold=50)
+    if blobs:
+      #for b in blobs:
+          b = find_max(blobs)
+          img.draw_rectangle(b[0:4])  # circle
+          img.draw_cross(b[5], b[6], color=(0, 0, 255))
+          x_pos = b[5]#中心位置
+          Size = b.area()
+          X = '%03d' % x_pos
+          S  = '%05d' % Size
+          DATA = 'x' + X + S + 's'
+          img.draw_string(2,2, ("X:%03d" %(b[5])), color=(255,255,255), scale=2)
+          img.draw_string(2,25, ("S:%04d" %(b.area())), color=(255,255,255), scale=2)
+          uart.write(DATA)
+          print(DATA)
+    else
+          uart.write('x')
+          uart.write('1')
+          uart.write('6')
+          uart.write('0')
+          uart.write('0')
+          uart.write('2')
+          uart.write('0')
+          uart.write('0')
+          uart.write('0')
+          uart.write('s')
+          img.draw_string(2,2, ("X:%03d" %(160)), color=(255,255,255), scale=2)
+          img.draw_string(2,25, ("S:%04d" %(2000)), color=(255,255,255), scale=2)
+    lcd.display(img)     #LCD显示图片
+————————————————
+版权声明：本文为CSDN博主「扶我起来我还想学」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/qq_60043905/article/details/125655140
